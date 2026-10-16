@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projects | Sahiti Chhanam</title>
+    <meta name="description" content="Software, systems, and applied ML projects by Sahiti Chhanam." />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="data.js"></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body data-page="projects">
+    <div class="scroll-progress"></div>
+    <div class="custom-cursor"></div>
+
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <a class="brand" href="index.html"><span class="brand-mark">SC</span> Sahiti Chhanam</a>
+        <button class="nav-toggle" type="button" aria-label="Toggle menu">☰</button>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a class="nav-link" href="index.html">Home</a>
+          <a class="nav-link" href="about.html">About</a>
+          <a class="nav-link" href="projects.html">Projects</a>
+          <a class="nav-link" href="experience.html">Experience</a>
+          <a class="nav-link" href="contributions.html">Contributions</a>
+          <a class="nav-link" href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="page-header">
+        <div class="container">
+          <span class="kicker">Projects</span>
+          <h1>Practical builds and learning in action</h1>
+          <p class="section-intro">I enjoy solving ambiguous real-world problems, validating ideas with data, and translating insights into useful systems.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="projects-toolbar">
+            <button class="filter-btn active" data-filter="all" type="button">All</button>
+            <button class="filter-btn" data-filter="ml" type="button">Machine Learning</button>
+            <button class="filter-btn" data-filter="analytics" type="button">Analytics</button>
+          </div>
+          <div class="project-grid" id="projectGrid"></div>
+        </div>
+      </section>
+
+      <section class="section" id="results">
+        <div class="container results-layout">
+          <div>
+            <span class="kicker">Results</span>
+            <h2 class="section-title">Results</h2>
+            <div class="results-grid" id="projectResultsGrid"></div>
+          </div>
+          <aside class="results-chip dark-chip" id="projectHighlights"></aside>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal" id="projectModal" aria-modal="true" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 class="modal-title">Project details</h3>
+          <button class="modal-close" type="button" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body"></div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-mark"><span class="footer-label">PORTFOLIO · 2026</span><a class="footer-privacy" href="privacy.html">Privacy</a></div>
+        <div class="footer-socials" aria-label="Social links">
+          <a class="footer-icon-link" href="https://github.com/Sahiti-web" target="_blank" rel="noreferrer" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.1c-3.1.68-3.76-1.32-3.76-1.32-.51-1.3-1.25-1.65-1.25-1.65-1.02-.7.08-.69.08-.69 1.13.08 1.73 1.16 1.73 1.16 1 .1.62 2.05 3.2 1.55.1-.73.4-1.23.71-1.51-2.48-.28-5.09-1.24-5.09-5.52 0-1.22.44-2.21 1.16-2.99-.12-.28-.5-1.42.11-2.95 0 0 .95-.3 3.08 1.14a10.7 10.7 0 0 1 5.6 0c2.14-1.44 3.08-1.14 3.08-1.14.61 1.53.23 2.67.12 2.95.72.78 1.15 1.77 1.15 2.99 0 4.29-2.61 5.24-5.1 5.51.4.35.76 1.03.76 2.08v3.09c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z"/></svg>
+          </a>
+          <a class="footer-icon-link" href="https://www.linkedin.com/in/sahiti-chhanam-a010b1324" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14ZM8.34 10H5.67v8h2.67v-8ZM7 6.67a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM18.33 13.4c0-2.4-1.28-3.52-2.99-3.52a2.58 2.58 0 0 0-2.33 1.28V10h-2.67v8h2.67v-4.33c0-1.14.22-2.24 1.62-2.24 1.38 0 1.4 1.3 1.4 2.31V18h2.3v-4.6Z"/></svg>
+          </a>
+        </div>
+        <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">↑</button>
+      </div>
+    </footer>
+  </body>
+</html>
