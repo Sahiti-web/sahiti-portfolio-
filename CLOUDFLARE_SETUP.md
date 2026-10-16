@@ -2,9 +2,9 @@
 
 This portfolio is a static site. Cloudflare Pages can host it for free, and a Pages Function records each visit in a private D1 database. The log stores the visitor IP, page path, and visit time; records older than 30 days are removed when a new visit is logged.
 
-## 1. Put the folder in a GitHub repository
+## 1. Connect the existing GitHub repository
 
-This folder is not connected to GitHub yet. Install GitHub Desktop, sign in or create a free GitHub account, then use **File → Add Local Repository** and choose this portfolio folder. Choose **Create a repository** if GitHub Desktop says it is not already a repository, then publish it to GitHub as a private repository.
+The portfolio is already in [Sahiti-web/sahiti-portfolio-](https://github.com/Sahiti-web/sahiti-portfolio-). In Cloudflare, connect this existing repository; do not create a second repository. The visitor logging code is in the `functions/api/visit.js` file and only records visits after the site is served over HTTPS with the database binding configured.
 
 ## 2. Create the Cloudflare Pages site
 
