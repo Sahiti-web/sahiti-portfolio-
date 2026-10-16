@@ -1,0 +1,16 @@
+{
+  "name": "sahiti-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sahiti Chhanam portfolio and privacy-aware visitor log endpoint",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.cjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
+  }
+}
