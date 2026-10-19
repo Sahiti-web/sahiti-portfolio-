@@ -22,7 +22,12 @@ app.disable("x-powered-by");
 app.set("trust proxy", 1);
 
 const pool = process.env.DATABASE_URL
-  ? new Pool({ connectionString: process.env.DATABASE_URL })
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_URL.includes("localhost")
+        ? false
+        : { rejectUnauthorized: false }
+    })
   : null;
 
 app.get("/healthz", (_request, response) => response.status(200).send("ok"));
