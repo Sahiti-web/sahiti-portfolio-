@@ -711,7 +711,7 @@ function initContactForm() {
 
     try {
       // 1. Submit to /api/contact on our own server (stores into Supabase)
-      const backendRes = await fetch("/api/contact", {
+      fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -720,27 +720,25 @@ function initContactForm() {
         body: JSON.stringify({ name, email, message })
       }).catch(() => null);
 
-      // 2. Also try Web3Forms if a custom access key is configured
-      const key = form.querySelector('[name="access_key"]')?.value;
-      if (key && !key.includes("b2e04f05")) {
-        const formData = new FormData(form);
-        fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          body: formData
-        }).catch(() => {});
-      }
+      // 2. Submit to Web3Forms (delivers directly to sahitichhanam@gmail.com)
+      const formData = new FormData(form);
+      const web3Res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+      const web3Data = await web3Res.json().catch(() => ({}));
 
-      if (backendRes && backendRes.ok) {
+      if (web3Res.ok && web3Data.success) {
         showFormStatus(
           form,
-          "✅ Thank you! Your message has been received successfully. I'll get back to you soon.",
+          "✅ Thank you! Your message has been sent successfully. I'll get back to you soon.",
           "success"
         );
         form.reset();
       } else {
         showFormStatus(
           form,
-          `✅ Message saved! You can also reach me directly at <a href="${mailtoUrl}" style="color: inherit; text-decoration: underline; font-weight: bold;">sahitichhanam@gmail.com</a>.`,
+          "✅ Message received! I'll get back to you soon.",
           "success"
         );
         form.reset();
