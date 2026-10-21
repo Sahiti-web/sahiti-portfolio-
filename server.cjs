@@ -21,27 +21,44 @@ app.disable("x-powered-by");
 // Render sits behind one trusted proxy and forwards the visitor address in X-Forwarded-For.
 app.set("trust proxy", 1);
 
-function getCleanDatabaseUrl() {
-  let url = (process.env.DATABASE_URL || "").trim();
-  if (!url) return null;
-  if ((url.startsWith('"') && url.endsWith('"')) || (url.startsWith("'") && url.endsWith("'"))) {
-    url = url.slice(1, -1).trim();
+function createPostgresPool() {
+  let raw = (process.env.DATABASE_URL || "").trim();
+  if (!raw) return null;
+
+  // Strip accidental prefixes or enclosing quotes
+  raw = raw.replace(/^DATABASE_URL\s*=\s*/i, "");
+  raw = raw.replace(/^psql\s+/i, "");
+  if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+    raw = raw.slice(1, -1).trim();
   }
-  if (url.startsWith("psql ")) {
-    url = url.replace(/^psql\s+["']?/, "").replace(/["']?$/, "").trim();
+
+  // Parse URI components directly to avoid ERR_INVALID_URL caused by special characters in passwords
+  const regex = /^postgres(?:ql)?:\/\/([^:]+):(.*)@([^:\/@]+)(?::(\d+))?\/([^?]+)(?:\?.*)?$/;
+  const match = raw.match(regex);
+
+  if (match) {
+    let [_, user, password, host, port, database] = match;
+    if (password.startsWith("[") && password.endsWith("]")) {
+      password = password.slice(1, -1);
+    }
+    return new Pool({
+      user: decodeURIComponent(user),
+      password: decodeURIComponent(password),
+      host,
+      port: Number(port) || 5432,
+      database,
+      ssl: host.includes("localhost") ? false : { rejectUnauthorized: false }
+    });
   }
-  return url;
+
+  // Fallback if already structured or non-standard URI
+  return new Pool({
+    connectionString: raw,
+    ssl: raw.includes("localhost") ? false : { rejectUnauthorized: false }
+  });
 }
 
-const dbUrl = getCleanDatabaseUrl();
-const pool = dbUrl
-  ? new Pool({
-      connectionString: dbUrl,
-      ssl: dbUrl.includes("localhost")
-        ? false
-        : { rejectUnauthorized: false }
-    })
-  : null;
+const pool = createPostgresPool();
 
 app.get("/healthz", (_request, response) => response.status(200).send("ok"));
 
