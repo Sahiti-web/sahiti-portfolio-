@@ -105,6 +105,29 @@ app.post("/api/visit", express.json({ limit: "2kb" }), async (request, response)
   }
 });
 
+app.post("/api/contact", express.json({ limit: "10kb" }), async (request, response) => {
+  if (!pool) return response.sendStatus(204);
+
+  const { name, email, message } = request.body || {};
+  if (!name || !email || !message) {
+    return response.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    await pool.query(
+      "CREATE TABLE IF NOT EXISTS messages (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, message TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+    );
+    await pool.query(
+      "INSERT INTO messages (name, email, message, created_at) VALUES ($1, $2, $3, NOW())",
+      [String(name).slice(0, 150), String(email).slice(0, 150), String(message).slice(0, 4000)]
+    );
+    return response.sendStatus(200);
+  } catch (error) {
+    console.error("Message backup write failed:", error.message);
+    return response.sendStatus(500);
+  }
+});
+
 app.use((request, response, next) => {
   let requestedPath;
   try {

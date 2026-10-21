@@ -553,8 +553,10 @@ body[data-page="experience"] #certificateGrid .certificate-content { align-self:
 .field textarea { min-height: 140px; resize: vertical; }
 .contact-honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 .contact-form button:disabled { cursor: wait; opacity: 0.7; }
-.contact-form > .primary-btn { margin-top: 1rem; }
-.form-status { margin-top: 0.8rem; color: #9b2525; }
+.form-status { margin-top: 1rem; border-radius: 8px; font-size: 0.92rem; line-height: 1.5; }
+.form-status.error { padding: 0.75rem 1rem; border: 1px solid #e57373; background: #ffebee; color: #c62828; }
+.form-status.success { padding: 0.85rem 1rem; border: 1px solid #81c784; background: #e8f5e9; color: #1b5e20; }
+.mailto-fallback-btn { padding: 0.65rem 1rem; font-size: 0.85rem; }
 
 /* Footer, overlays, motion */
 .site-footer { margin-top: 2rem; border-top: 1px solid var(--dark); background: var(--cream); }

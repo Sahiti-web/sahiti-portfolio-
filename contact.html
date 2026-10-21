@@ -47,14 +47,14 @@
                 <div class="contact-icon">✉</div>
                 <div>
                   <strong>Email</strong>
-                  <span>sahitichhanam@gmail.com</span>
+                  <a href="mailto:sahitichhanam@gmail.com" style="color: inherit; text-decoration: underline;">sahitichhanam@gmail.com</a>
                 </div>
               </div>
               <div class="contact-item">
                 <div class="contact-icon">☎</div>
                 <div>
                   <strong>Phone</strong>
-                  <span>+91 762 096 0826</span>
+                  <a href="tel:+917620960826" style="color: inherit; text-decoration: underline;">+91 762 096 0826</a>
                 </div>
               </div>
               <div class="contact-item">
@@ -74,21 +74,22 @@
             </div>
           </aside>
 
-          <form class="contact-form reveal" id="contactForm" action="https://formsubmit.co/sahitichhanam@gmail.com" method="POST" novalidate>
-            <input type="hidden" name="_subject" value="New portfolio contact message" />
-            <input type="hidden" name="_url" value="" />
+          <form class="contact-form reveal" id="contactForm" action="https://api.web3forms.com/submit" method="POST" novalidate>
+            <input type="hidden" name="access_key" id="web3FormsKey" value="b2e04f05-4e89-497d-aa53-83279f53e6b7" />
+            <input type="hidden" name="subject" value="New Portfolio Contact Message" />
+            <input type="hidden" name="from_name" value="Portfolio Contact" />
             <div class="form-grid">
               <div class="field">
                 <label for="name">Name</label>
-                <input id="name" name="name" type="text" placeholder="Your name" />
+                <input id="name" name="name" type="text" placeholder="Your name" required />
               </div>
               <div class="field">
                 <label for="email">Email</label>
-                <input id="email" name="email" type="email" placeholder="Your email" />
+                <input id="email" name="email" type="email" placeholder="Your email" required />
               </div>
               <div class="field">
                 <label for="message">Message</label>
-                <textarea id="message" name="message" placeholder="Write a short message"></textarea>
+                <textarea id="message" name="message" placeholder="Write your message..." required></textarea>
               </div>
               <div class="contact-honeypot" aria-hidden="true">
                 <label for="contactWebsite">Leave this field empty</label>
@@ -96,7 +97,10 @@
               </div>
             </div>
             <div class="form-status" aria-live="polite"></div>
-            <button class="primary-btn" type="submit">Send Message</button>
+            <div class="form-actions" style="margin-top: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
+              <button class="primary-btn" type="submit">Send Message</button>
+              <a class="secondary-btn mailto-fallback-btn" href="mailto:sahitichhanam@gmail.com">Send via Email App ✉</a>
+            </div>
           </form>
         </div>
       </section>

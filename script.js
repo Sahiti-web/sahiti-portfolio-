@@ -674,61 +674,89 @@ function initProjectFilters() {
 function initContactForm() {
   const form = document.getElementById("contactForm");
   if (!form) return;
-  const pageUrlField = form.querySelector('[name="_url"]');
-  if (pageUrlField) pageUrlField.value = window.location.href;
 
-  form.addEventListener("submit", (event) => {
-    if (window.location.protocol === "file:") {
-      event.preventDefault();
-      showFormError(form, "Open this page through a local web server (http://localhost) to submit the contact form.");
-      return;
-    }
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
     const name = form.querySelector("#name").value.trim();
     const email = form.querySelector("#email").value.trim();
     const message = form.querySelector("#message").value.trim();
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    let isValid = true;
 
     if (!name || name.length < 2) {
-      showFormError(form, "Please enter a valid name.");
-      isValid = false;
-    }
-
-    if (!emailPattern.test(email)) {
-      showFormError(form, "Please enter a valid email address.");
-      isValid = false;
-    }
-
-    if (!message || message.length < 15) {
-      showFormError(form, "Message should be at least 15 characters long.");
-      isValid = false;
-    }
-
-    if (!isValid) {
-      event.preventDefault();
+      showFormStatus(form, "Please enter your name (at least 2 characters).", "error");
       return;
     }
 
-    const status = form.querySelector(".form-status");
-    if (status) {
-      status.textContent = "";
-      status.classList.remove("error");
+    if (!emailPattern.test(email)) {
+      showFormStatus(form, "Please enter a valid email address.", "error");
+      return;
     }
+
+    if (!message || message.length < 10) {
+      showFormStatus(form, "Message should be at least 10 characters long.", "error");
+      return;
+    }
+
     const submitButton = form.querySelector('[type="submit"]');
+    const originalText = submitButton ? submitButton.textContent : "Send Message";
     if (submitButton) {
       submitButton.disabled = true;
       submitButton.textContent = "Sending…";
     }
+    showFormStatus(form, "", "");
+
+    const mailtoUrl = `mailto:sahitichhanam@gmail.com?subject=${encodeURIComponent("Portfolio message from " + name)}&body=${encodeURIComponent(message)}`;
+
+    try {
+      // 1. Also store copy in backend Supabase if available
+      fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message })
+      }).catch(() => {});
+
+      // 2. Submit to Web3Forms
+      const formData = new FormData(form);
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.success) {
+        showFormStatus(form, "✅ Thank you! Your message has been sent successfully. I'll get back to you soon.", "success");
+        form.reset();
+      } else {
+        showFormStatus(
+          form,
+          `Message could not be sent automatically. You can <a href="${mailtoUrl}" style="color: inherit; text-decoration: underline; font-weight: bold;">click here to send directly from your email app</a>.`,
+          "error"
+        );
+      }
+    } catch (err) {
+      showFormStatus(
+        form,
+        `Network issue connecting to email service. Please <a href="${mailtoUrl}" style="color: inherit; text-decoration: underline; font-weight: bold;">click here to send via your email app</a>.`,
+        "error"
+      );
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
+    }
   });
 }
 
-function showFormError(form, message) {
+function showFormStatus(form, message, type) {
   const status = form.querySelector(".form-status");
   if (!status) return;
-  status.textContent = message;
-  status.classList.add("error");
+  status.innerHTML = message;
+  status.className = "form-status";
+  if (type) status.classList.add(type);
 }
 
 function showLightbox(imageSrc, title = "Portfolio item") {
