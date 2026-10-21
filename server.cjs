@@ -63,7 +63,10 @@ app.post("/api/visit", express.json({ limit: "2kb" }), async (request, response)
   }
 
   try {
-    await pool.query("INSERT INTO visits (ip_address, page_path) VALUES ($1, $2)", [ipAddress, pagePath]);
+    await pool.query(
+      "INSERT INTO visits (ip_address, page_path, visited_at) VALUES ($1, $2, NOW())",
+      [ipAddress, pagePath]
+    );
     await pool.query("DELETE FROM visits WHERE visited_at < NOW() - INTERVAL '30 days'");
     return response.sendStatus(204);
   } catch (error) {
@@ -97,6 +100,13 @@ app.use((_request, response) => response.sendFile(path.join(root, "index.html"))
 
 const server = app.listen(port, "0.0.0.0", () => {
   console.log(`Portfolio server listening on ${port}`);
+  if (!pool) {
+    console.warn("⚠️  DATABASE_URL is not set. Visitor logging is disabled.");
+  } else {
+    pool.query("SELECT 1")
+      .then(() => console.log("✅ Successfully connected to PostgreSQL / Supabase database."))
+      .catch((err) => console.error("❌ Database connection failed on startup:", err.message));
+  }
 });
 
 async function shutdown() {

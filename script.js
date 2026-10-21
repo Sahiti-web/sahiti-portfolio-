@@ -26,7 +26,15 @@ function initVisitorLog() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: window.location.pathname }),
     keepalive: true
-  }).catch(() => {});
+  })
+    .then((res) => {
+      if (!res.ok) {
+        console.warn("Visitor log returned status:", res.status);
+      }
+    })
+    .catch((err) => {
+      console.warn("Visitor log request failed:", err);
+    });
 }
 
 function initNav() {
