@@ -21,10 +21,23 @@ app.disable("x-powered-by");
 // Render sits behind one trusted proxy and forwards the visitor address in X-Forwarded-For.
 app.set("trust proxy", 1);
 
-const pool = process.env.DATABASE_URL
+function getCleanDatabaseUrl() {
+  let url = (process.env.DATABASE_URL || "").trim();
+  if (!url) return null;
+  if ((url.startsWith('"') && url.endsWith('"')) || (url.startsWith("'") && url.endsWith("'"))) {
+    url = url.slice(1, -1).trim();
+  }
+  if (url.startsWith("psql ")) {
+    url = url.replace(/^psql\s+["']?/, "").replace(/["']?$/, "").trim();
+  }
+  return url;
+}
+
+const dbUrl = getCleanDatabaseUrl();
+const pool = dbUrl
   ? new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.DATABASE_URL.includes("localhost")
+      connectionString: dbUrl,
+      ssl: dbUrl.includes("localhost")
         ? false
         : { rejectUnauthorized: false }
     })
@@ -103,9 +116,13 @@ const server = app.listen(port, "0.0.0.0", () => {
   if (!pool) {
     console.warn("⚠️  DATABASE_URL is not set. Visitor logging is disabled.");
   } else {
-    pool.query("SELECT 1")
-      .then(() => console.log("✅ Successfully connected to PostgreSQL / Supabase database."))
-      .catch((err) => console.error("❌ Database connection failed on startup:", err.message));
+    try {
+      pool.query("SELECT 1")
+        .then(() => console.log("✅ Successfully connected to PostgreSQL / Supabase database."))
+        .catch((err) => console.error("❌ Database connection failed on startup:", err.message));
+    } catch (err) {
+      console.error("❌ DATABASE_URL format is invalid:", err.message);
+    }
   }
 });
 
