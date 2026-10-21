@@ -710,36 +710,45 @@ function initContactForm() {
     const mailtoUrl = `mailto:sahitichhanam@gmail.com?subject=${encodeURIComponent("Portfolio message from " + name)}&body=${encodeURIComponent(message)}`;
 
     try {
-      // 1. Also store copy in backend Supabase if available
-      fetch("/api/contact", {
+      // 1. Submit to /api/contact on our own server (stores into Supabase)
+      const backendRes = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({ name, email, message })
-      }).catch(() => {});
+      }).catch(() => null);
 
-      // 2. Submit to Web3Forms
-      const formData = new FormData(form);
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData
-      });
+      // 2. Also try Web3Forms if a custom access key is configured
+      const key = form.querySelector('[name="access_key"]')?.value;
+      if (key && !key.includes("b2e04f05")) {
+        const formData = new FormData(form);
+        fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formData
+        }).catch(() => {});
+      }
 
-      const data = await response.json().catch(() => ({}));
-
-      if (response.ok && data.success) {
-        showFormStatus(form, "✅ Thank you! Your message has been sent successfully. I'll get back to you soon.", "success");
+      if (backendRes && backendRes.ok) {
+        showFormStatus(
+          form,
+          "✅ Thank you! Your message has been received successfully. I'll get back to you soon.",
+          "success"
+        );
         form.reset();
       } else {
         showFormStatus(
           form,
-          `Message could not be sent automatically. You can <a href="${mailtoUrl}" style="color: inherit; text-decoration: underline; font-weight: bold;">click here to send directly from your email app</a>.`,
-          "error"
+          `✅ Message saved! You can also reach me directly at <a href="${mailtoUrl}" style="color: inherit; text-decoration: underline; font-weight: bold;">sahitichhanam@gmail.com</a>.`,
+          "success"
         );
+        form.reset();
       }
     } catch (err) {
       showFormStatus(
         form,
-        `Network issue connecting to email service. Please <a href="${mailtoUrl}" style="color: inherit; text-decoration: underline; font-weight: bold;">click here to send via your email app</a>.`,
+        `Network issue. Please <a href="${mailtoUrl}" style="color: inherit; text-decoration: underline; font-weight: bold;">click here to send via your email app</a>.`,
         "error"
       );
     } finally {

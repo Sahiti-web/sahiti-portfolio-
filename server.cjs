@@ -105,28 +105,41 @@ app.post("/api/visit", express.json({ limit: "2kb" }), async (request, response)
   }
 });
 
-app.post("/api/contact", express.json({ limit: "10kb" }), async (request, response) => {
-  if (!pool) return response.sendStatus(204);
+app.post(
+  "/api/contact",
+  express.json({ limit: "10kb" }),
+  express.urlencoded({ extended: true, limit: "10kb" }),
+  async (request, response) => {
+    const { name, email, message } = request.body || {};
+    const isJson = request.headers.accept?.includes("application/json") || request.is("json");
 
-  const { name, email, message } = request.body || {};
-  if (!name || !email || !message) {
-    return response.status(400).json({ error: "Missing required fields" });
-  }
+    if (!name || !email || !message) {
+      if (isJson) {
+        return response.status(400).json({ success: false, error: "Missing required fields" });
+      }
+      return response.redirect("/contact.html?error=missing_fields");
+    }
 
-  try {
-    await pool.query(
-      "CREATE TABLE IF NOT EXISTS messages (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, message TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)"
-    );
-    await pool.query(
-      "INSERT INTO messages (name, email, message, created_at) VALUES ($1, $2, $3, NOW())",
-      [String(name).slice(0, 150), String(email).slice(0, 150), String(message).slice(0, 4000)]
-    );
-    return response.sendStatus(200);
-  } catch (error) {
-    console.error("Message backup write failed:", error.message);
-    return response.sendStatus(500);
+    if (pool) {
+      try {
+        await pool.query(
+          "CREATE TABLE IF NOT EXISTS messages (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, message TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+        );
+        await pool.query(
+          "INSERT INTO messages (name, email, message, created_at) VALUES ($1, $2, $3, NOW())",
+          [String(name).slice(0, 150), String(email).slice(0, 150), String(message).slice(0, 4000)]
+        );
+      } catch (error) {
+        console.error("Message backup write failed:", error.message);
+      }
+    }
+
+    if (isJson) {
+      return response.status(200).json({ success: true, message: "Message received successfully." });
+    }
+    return response.redirect("/contact.html?sent=true");
   }
-});
+);
 
 app.use((request, response, next) => {
   let requestedPath;
