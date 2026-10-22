@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · Visitor Log</title>
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@110,800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --cream: #FBFAEE;
+        --blue: #2563B0;
+        --folder-deep: #1E5AA8;
+        --sky: #38A3E0;
+        --dark: #2B2B2B;
+        --soft: #DEDDD0;
+        --paper: #fffef8;
+        --line: rgba(43,43,43,0.18);
+        --shadow: 0 18px 35px rgba(30,90,168,0.12);
+        --font-display: "Archivo", sans-serif;
+        --font-body: "DM Sans", "Inter", sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+        --green: #16a34a;
+        --red: #dc2626;
+        --amber: #d97706;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: var(--font-body);
+        background: var(--cream);
+        color: var(--dark);
+        min-height: 100vh;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      body::before {
+        position: fixed;
+        z-index: -1;
+        inset: 0;
+        content: "";
+        opacity: 0.22;
+        pointer-events: none;
+        background-image: radial-gradient(rgba(43,43,43,0.12) 0.55px, transparent 0.55px);
+        background-size: 8px 8px;
+      }
+      a { color: inherit; text-decoration: none; }
+      button { font: inherit; cursor: pointer; }
+
+      /* Login Screen */
+      #login-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+      }
+      .login-card {
+        background: var(--paper);
+        border: 1px solid var(--soft);
+        border-radius: 1.5rem;
+        padding: 3rem 2.5rem;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: var(--shadow), 0 2px 4px rgba(0,0,0,0.04);
+        animation: card-in 0.4s cubic-bezier(0.16,1,0.3,1) both;
+      }
+      @keyframes card-in {
+        from { opacity: 0; transform: translateY(24px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .login-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(37,99,176,0.1);
+        color: var(--blue);
+        border-radius: 99px;
+        padding: 0.3rem 0.85rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1.25rem;
+      }
+      .login-badge::before { content: "🔒"; margin-right: 0.3rem; }
+      .login-card h1 {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 1.9rem;
+        color: var(--blue);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        font-stretch: 110%;
+      }
+      .login-card p {
+        color: rgba(43,43,43,0.6);
+        margin-bottom: 2rem;
+        font-size: 0.92rem;
+      }
+      .login-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+      .login-field label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; color: rgba(43,43,43,0.7); }
+      .login-field input {
+        padding: 0.75rem 1rem;
+        border: 1.5px solid var(--soft);
+        border-radius: 0.75rem;
+        background: var(--cream);
+        font-size: 0.95rem;
+        font-family: var(--font-mono);
+        letter-spacing: 0.05em;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .login-field input:focus {
+        outline: none;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(37,99,176,0.12);
+      }
+      .login-btn {
+        width: 100%;
+        padding: 0.85rem;
+        background: var(--blue);
+        color: #fff;
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        transition: background 0.2s, transform 0.15s;
+      }
+      .login-btn:hover { background: var(--folder-deep); transform: translateY(-1px); }
+      .login-btn:active { transform: translateY(0); }
+      .login-error {
+        display: none;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: var(--red);
+        border-radius: 0.6rem;
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+      .login-error.visible { display: block; }
+
+      /* Dashboard */
+      #dashboard { display: none; }
+      #dashboard.visible { display: block; }
+
+      .admin-header {
+        background: var(--paper);
+        border-bottom: 1px solid var(--soft);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        box-shadow: 0 2px 8px rgba(30,90,168,0.06);
+      }
+      .admin-header-inner {
+        width: min(1280px, calc(100% - 2rem));
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .admin-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--blue);
+        font-stretch: 110%;
+      }
+      .admin-logo-mark {
+        width: 32px; height: 32px;
+        background: var(--blue);
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 0.9rem;
+      }
+      .admin-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+      .btn-sm {
+        padding: 0.5rem 1rem;
+        border-radius: 0.6rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border: 1.5px solid transparent;
+        transition: all 0.2s;
+      }
+      .btn-outline { border-color: var(--soft); background: transparent; color: var(--dark); }
+      .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+      .btn-danger { border-color: #fecaca; color: var(--red); background: transparent; }
+      .btn-danger:hover { background: #fef2f2; }
+
+      .admin-body { width: min(1280px, calc(100% - 2rem)); margin: 0 auto; padding: 2rem 0 4rem; }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .stat-card {
+        background: var(--paper);
+        border: 1px solid var(--soft);
+        border-radius: 1.1rem;
+        padding: 1.4rem 1.6rem;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.2s;
+      }
+      .stat-card:hover { box-shadow: var(--shadow); }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--blue), var(--sky));
+      }
+      .stat-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(43,43,43,0.5); margin-bottom: 0.5rem; }
+      .stat-value { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; font-stretch: 110%; color: var(--blue); line-height: 1; }
+      .stat-sub { font-size: 0.8rem; color: rgba(43,43,43,0.5); margin-top: 0.4rem; }
+
+      .filter-bar {
+        background: var(--paper);
+        border: 1px solid var(--soft);
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+      }
+      .filter-bar label { font-size: 0.82rem; font-weight: 600; color: rgba(43,43,43,0.6); white-space: nowrap; }
+      .filter-bar input, .filter-bar select {
+        padding: 0.45rem 0.75rem;
+        border: 1.5px solid var(--soft);
+        border-radius: 0.6rem;
+        font-size: 0.85rem;
+        background: var(--cream);
+        color: var(--dark);
+        transition: border-color 0.2s;
+        font-family: var(--font-body);
+      }
+      .filter-bar input:focus, .filter-bar select:focus { outline: none; border-color: var(--blue); }
+      .filter-bar input { flex: 1; min-width: 160px; }
+      #results-info { margin-left: auto; font-size: 0.82rem; color: rgba(43,43,43,0.5); white-space: nowrap; }
+
+      .table-wrap {
+        background: var(--paper);
+        border: 1px solid var(--soft);
+        border-radius: 1.1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(30,90,168,0.06);
+      }
+      .visits-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+      .visits-table thead { background: rgba(37,99,176,0.06); border-bottom: 1px solid var(--soft); }
+      .visits-table th {
+        padding: 0.9rem 1.1rem;
+        text-align: left;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(43,43,43,0.55);
+        white-space: nowrap;
+      }
+      .visits-table tbody tr { border-bottom: 1px solid var(--line); transition: background 0.15s; }
+      .visits-table tbody tr:last-child { border-bottom: none; }
+      .visits-table tbody tr:hover { background: rgba(37,99,176,0.03); }
+      .visits-table td { padding: 0.85rem 1.1rem; vertical-align: middle; }
+      .ip-cell { font-family: var(--font-mono); font-size: 0.82rem; color: var(--blue); font-weight: 500; }
+      .path-cell { font-family: var(--font-mono); font-size: 0.8rem; color: rgba(43,43,43,0.7); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+      .time-cell { font-size: 0.82rem; color: rgba(43,43,43,0.55); white-space: nowrap; }
+      .ago-badge { display: inline-flex; align-items: center; background: rgba(37,99,176,0.1); color: var(--blue); border-radius: 99px; padding: 0.15rem 0.6rem; font-size: 0.78rem; font-weight: 600; }
+      .row-num { color: rgba(43,43,43,0.3); font-size: 0.78rem; font-family: var(--font-mono); }
+
+      .state-box { text-align: center; padding: 4rem 2rem; color: rgba(43,43,43,0.4); }
+      .state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+      .state-box p { font-size: 0.9rem; }
+
+      .pagination { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
+      .pg-btn { padding: 0.45rem 0.9rem; border: 1.5px solid var(--soft); background: var(--paper); border-radius: 0.6rem; font-size: 0.82rem; font-weight: 600; color: var(--dark); transition: all 0.2s; }
+      .pg-btn:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+      .pg-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+      .pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+      .live-dot { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--green); font-weight: 600; }
+      .live-dot::before { content: ""; width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 1.8s ease-in-out infinite; }
+      @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
+
+      .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--dark); color: #fff; padding: 0.65rem 1.25rem; border-radius: 99px; font-size: 0.85rem; font-weight: 500; z-index: 999; transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s; opacity: 0; white-space: nowrap; }
+      .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+      @media (max-width: 640px) {
+        .visits-table td:nth-child(4), .visits-table th:nth-child(4) { display: none; }
+        .stat-value { font-size: 1.7rem; }
+        .admin-actions .live-dot { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Login -->
+    <div id="login-screen">
+      <div class="login-card">
+        <div class="login-badge">Admin Access</div>
+        <h1>Visitor Log</h1>
+        <p>Enter your admin password to view the visitor analytics dashboard.</p>
+        <div class="login-error" id="loginError">Incorrect password. Please try again.</div>
+        <div class="login-field">
+          <label for="adminPass">Password</label>
+          <input type="password" id="adminPass" placeholder="••••••••••••" autocomplete="current-password" />
+        </div>
+        <button class="login-btn" id="loginBtn" type="button">Unlock Dashboard</button>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard">
+      <header class="admin-header">
+        <div class="admin-header-inner">
+          <div class="admin-logo">
+            <div class="admin-logo-mark">SC</div>
+            Admin · Visitor Log
+          </div>
+          <div class="admin-actions">
+            <span class="live-dot">Live</span>
+            <button class="btn-sm btn-outline" id="refreshBtn" type="button">&#8635; Refresh</button>
+            <a class="btn-sm btn-outline" href="index.html">&#8592; Portfolio</a>
+            <button class="btn-sm btn-danger" id="logoutBtn" type="button">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-body">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Visits</div>
+            <div class="stat-value" id="statTotal">&#8212;</div>
+            <div class="stat-sub">all time (last 30 days)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Unique IPs</div>
+            <div class="stat-value" id="statUnique">&#8212;</div>
+            <div class="stat-sub">distinct visitors</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Today</div>
+            <div class="stat-value" id="statToday">&#8212;</div>
+            <div class="stat-sub">visits in last 24 h</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Top Page</div>
+            <div class="stat-value" style="font-size:1.1rem;padding-top:0.3rem;" id="statTopPage">&#8212;</div>
+            <div class="stat-sub">most visited path</div>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <label for="filterInput">Filter</label>
+          <input type="search" id="filterInput" placeholder="Search IP or page path&#8230;" />
+          <select id="sortSelect">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="ip">IP address</option>
+            <option value="page">Page path</option>
+          </select>
+          <span id="results-info"></span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="visits-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>IP Address</th>
+                <th>Page</th>
+                <th>Time</th>
+                <th>When</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr><td colspan="5">
+                <div class="state-box">
+                  <div class="state-icon">&#9203;</div>
+                  <p>Loading visitor data&#8230;</p>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const PAGE_SIZE = 25;
+      const AUTO_REFRESH_MS = 60000;
+
+      let authPassword = sessionStorage.getItem("adminPass") || "";
+      let allVisits = [];
+      let filteredVisits = [];
+      let currentPage = 1;
+      let sortKey = "newest";
+      let filterText = "";
+      let refreshTimer = null;
+
+      const loginScreen = document.getElementById("login-screen");
+      const dashboard   = document.getElementById("dashboard");
+      const loginError  = document.getElementById("loginError");
+      const adminPassEl = document.getElementById("adminPass");
+      const loginBtn    = document.getElementById("loginBtn");
+      const refreshBtn  = document.getElementById("refreshBtn");
+      const logoutBtn   = document.getElementById("logoutBtn");
+      const tableBody   = document.getElementById("tableBody");
+      const pagination  = document.getElementById("pagination");
+      const filterInput = document.getElementById("filterInput");
+      const sortSelect  = document.getElementById("sortSelect");
+      const resultsInfo = document.getElementById("results-info");
+      const toastEl     = document.getElementById("toast");
+
+      function showToast(msg, duration) {
+        duration = duration || 2500;
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        setTimeout(function() { toastEl.classList.remove("show"); }, duration);
+      }
+
+      function timeAgo(date) {
+        var diff  = Date.now() - date.getTime();
+        var mins  = Math.floor(diff / 60000);
+        var hours = Math.floor(diff / 3600000);
+        var days  = Math.floor(diff / 86400000);
+        if (mins < 1)   return "just now";
+        if (mins < 60)  return mins + "m ago";
+        if (hours < 24) return hours + "h ago";
+        return days + "d ago";
+      }
+
+      function formatDate(date) {
+        return date.toLocaleString("en-IN", {
+          day: "2-digit", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit", hour12: true
+        });
+      }
+
+      function escHtml(str) {
+        return String(str)
+          .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+      }
+
+      async function fetchVisits() {
+        try {
+          var res = await fetch("/api/admin/visits", {
+            headers: { "x-admin-password": authPassword }
+          });
+          if (res.status === 401 || res.status === 403) {
+            handleWrongPassword();
+            return false;
+          }
+          if (!res.ok) {
+            showToast("Server error — try again shortly");
+            return false;
+          }
+          var data = await res.json();
+          allVisits = (data.visits || []).map(function(v) {
+            return Object.assign({}, v, { date: new Date(v.visited_at) });
+          });
+          updateStats();
+          applyFilterSort();
+          return true;
+        } catch(e) {
+          showToast("Could not connect to server");
+          return false;
+        }
+      }
+
+      function updateStats() {
+        document.getElementById("statTotal").textContent = allVisits.length;
+        var uniqueSet = {};
+        allVisits.forEach(function(v) { uniqueSet[v.ip_address] = 1; });
+        document.getElementById("statUnique").textContent = Object.keys(uniqueSet).length;
+        var since24h = Date.now() - 86400000;
+        var today = allVisits.filter(function(v) { return v.date.getTime() > since24h; }).length;
+        document.getElementById("statToday").textContent = today;
+        var pageCounts = {};
+        allVisits.forEach(function(v) { pageCounts[v.page_path] = (pageCounts[v.page_path] || 0) + 1; });
+        var entries = Object.entries(pageCounts).sort(function(a,b) { return b[1]-a[1]; });
+        document.getElementById("statTopPage").textContent = entries.length ? entries[0][0] : "—";
+      }
+
+      function applyFilterSort() {
+        var list = allVisits.slice();
+        if (filterText) {
+          var q = filterText.toLowerCase();
+          list = list.filter(function(v) {
+            return v.ip_address.toLowerCase().includes(q) || v.page_path.toLowerCase().includes(q);
+          });
+        }
+        if (sortKey === "newest") list.sort(function(a,b) { return b.date - a.date; });
+        else if (sortKey === "oldest") list.sort(function(a,b) { return a.date - b.date; });
+        else if (sortKey === "ip")   list.sort(function(a,b) { return a.ip_address.localeCompare(b.ip_address); });
+        else if (sortKey === "page") list.sort(function(a,b) { return a.page_path.localeCompare(b.page_path); });
+        filteredVisits = list;
+        resultsInfo.textContent = list.length + " result" + (list.length !== 1 ? "s" : "");
+        currentPage = 1;
+        renderTable();
+        renderPagination();
+      }
+
+      function renderTable() {
+        var start = (currentPage - 1) * PAGE_SIZE;
+        var slice = filteredVisits.slice(start, start + PAGE_SIZE);
+        if (slice.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="5"><div class="state-box"><div class="state-icon">' +
+            (filterText ? "&#128269;" : "&#128237;") + '</div><p>' +
+            (filterText ? "No results match your search." : "No visits recorded yet.") +
+            '</p></div></td></tr>';
+          return;
+        }
+        tableBody.innerHTML = slice.map(function(v, i) {
+          var rowNum = start + i + 1;
+          return '<tr>' +
+            '<td><span class="row-num">' + rowNum + '</span></td>' +
+            '<td><span class="ip-cell">' + escHtml(v.ip_address) + '</span></td>' +
+            '<td><span class="path-cell" title="' + escHtml(v.page_path) + '">' + escHtml(v.page_path) + '</span></td>' +
+            '<td><span class="time-cell">' + formatDate(v.date) + '</span></td>' +
+            '<td><span class="ago-badge">' + timeAgo(v.date) + '</span></td>' +
+            '</tr>';
+        }).join("");
+      }
+
+      function renderPagination() {
+        var totalPages = Math.ceil(filteredVisits.length / PAGE_SIZE);
+        if (totalPages <= 1) { pagination.innerHTML = ""; return; }
+        var html = '<button class="pg-btn" id="pgPrev"' + (currentPage === 1 ? ' disabled' : '') + '>&#8249; Prev</button>';
+        for (var p = 1; p <= totalPages; p++) {
+          var isNear = Math.abs(p - currentPage) <= 2 || p === 1 || p === totalPages;
+          if (isNear) {
+            html += '<button class="pg-btn' + (p === currentPage ? ' active' : '') + '" data-page="' + p + '">' + p + '</button>';
+          }
+        }
+        html += '<button class="pg-btn" id="pgNext"' + (currentPage === totalPages ? ' disabled' : '') + '>Next &#8250;</button>';
+        pagination.innerHTML = html;
+        pagination.querySelectorAll("[data-page]").forEach(function(btn) {
+          btn.addEventListener("click", function() {
+            currentPage = Number(btn.dataset.page);
+            renderTable(); renderPagination();
+          });
+        });
+        var prev = document.getElementById("pgPrev");
+        var next = document.getElementById("pgNext");
+        if (prev) prev.addEventListener("click", function() { currentPage--; renderTable(); renderPagination(); });
+        if (next) next.addEventListener("click", function() { currentPage++; renderTable(); renderPagination(); });
+      }
+
+      function handleWrongPassword() {
+        authPassword = "";
+        sessionStorage.removeItem("adminPass");
+        loginError.classList.add("visible");
+        loginScreen.style.display = "flex";
+        dashboard.classList.remove("visible");
+        clearAutoRefresh();
+      }
+
+      async function tryLogin() {
+        var pw = adminPassEl.value.trim();
+        if (!pw) return;
+        loginBtn.textContent = "Verifying…";
+        loginBtn.disabled = true;
+        authPassword = pw;
+        var ok = await fetchVisits();
+        loginBtn.textContent = "Unlock Dashboard";
+        loginBtn.disabled = false;
+        if (ok) {
+          sessionStorage.setItem("adminPass", pw);
+          loginError.classList.remove("visible");
+          loginScreen.style.display = "none";
+          dashboard.classList.add("visible");
+          startAutoRefresh();
+          showToast("Welcome back, Sahiti!");
+        } else {
+          loginError.classList.add("visible");
+        }
+      }
+
+      function startAutoRefresh() {
+        clearAutoRefresh();
+        refreshTimer = setInterval(async function() {
+          await fetchVisits();
+        }, AUTO_REFRESH_MS);
+      }
+      function clearAutoRefresh() {
+        if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+      }
+
+      loginBtn.addEventListener("click", tryLogin);
+      adminPassEl.addEventListener("keydown", function(e) { if (e.key === "Enter") tryLogin(); });
+
+      refreshBtn.addEventListener("click", async function() {
+        refreshBtn.textContent = "Loading…";
+        await fetchVisits();
+        refreshBtn.textContent = "\u21BB Refresh";
+        showToast("Refreshed");
+      });
+
+      logoutBtn.addEventListener("click", function() {
+        authPassword = "";
+        sessionStorage.removeItem("adminPass");
+        clearAutoRefresh();
+        dashboard.classList.remove("visible");
+        loginScreen.style.display = "flex";
+        adminPassEl.value = "";
+        showToast("Logged out");
+      });
+
+      filterInput.addEventListener("input", function(e) {
+        filterText = e.target.value.trim();
+        applyFilterSort();
+      });
+      sortSelect.addEventListener("change", function(e) {
+        sortKey = e.target.value;
+        applyFilterSort();
+      });
+
+      // Auto-login if session has saved password
+      (async function init() {
+        if (authPassword) {
+          loginScreen.style.display = "none";
+          dashboard.classList.add("visible");
+          tableBody.innerHTML = '<tr><td colspan="5"><div class="state-box"><div class="state-icon">&#9203;</div><p>Loading&#8230;</p></div></td></tr>';
+          var ok = await fetchVisits();
+          if (!ok) {
+            loginScreen.style.display = "flex";
+            dashboard.classList.remove("visible");
+          } else {
+            startAutoRefresh();
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -105,6 +105,30 @@ app.post("/api/visit", express.json({ limit: "2kb" }), async (request, response)
   }
 });
 
+// ── Admin: view visitor log (password-protected) ──────────────────────────
+app.get("/api/admin/visits", async (request, response) => {
+  const adminPassword = (process.env.ADMIN_PASSWORD || "").trim();
+  if (!adminPassword) {
+    return response.status(503).json({ error: "Admin access is not configured on this server." });
+  }
+  const provided = (request.get("x-admin-password") || "").trim();
+  if (!provided || provided !== adminPassword) {
+    return response.status(401).json({ error: "Unauthorized" });
+  }
+  if (!pool) {
+    return response.status(503).json({ error: "Database is not configured." });
+  }
+  try {
+    const result = await pool.query(
+      "SELECT ip_address, page_path, visited_at FROM visits ORDER BY visited_at DESC LIMIT 5000"
+    );
+    return response.json({ visits: result.rows });
+  } catch (error) {
+    console.error("Admin visits query failed:", error.message);
+    return response.status(503).json({ error: "Database query failed." });
+  }
+});
+
 app.post(
   "/api/contact",
   express.json({ limit: "10kb" }),
